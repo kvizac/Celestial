@@ -1,0 +1,39 @@
+# Celestial Insights - Python Dependencies
+# =========================================
+
+# Web Framework
+flask==3.0.0
+flask-cors==4.0.0
+
+# Payment Processing
+stripe==7.0.0
+
+# Astronomy/Astrology Calculations
+ephem==4.1.5
+
+# PDF Generation
+reportlab==4.0.7
+
+# Timezone Handling
+pytz==2024.1
+timezonefinder==6.2.0
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Email (optional - choose your provider)
+sendgrid==6.11.0
+# or
+# mailgun==0.1.1
+
+# Database (optional - choose your DB)
+# psycopg2-binary==2.9.9  # PostgreSQL
+# pymongo==4.6.0  # MongoDB
+# sqlalchemy==2.0.23  # ORM
+
+# Production Server
+gunicorn==21.2.0
+
+# Development/Testing
+pytest==7.4.3
+requests==2.31.0
