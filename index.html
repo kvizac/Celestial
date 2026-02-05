@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celestial Insights | Personalized Astrology Reports</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-light: #F4E4BC;
+            --gold-dark: #996515;
+            --deep-purple: #1a0a2e;
+            --cosmic-blue: #16213e;
+            --midnight: #0f0f1a;
+            --star-white: #f8f6ff;
+            --nebula-pink: #ff6b9d;
+            --nebula-purple: #c44dff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background: var(--midnight);
+            color: var(--star-white);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        /* Starfield Background */
+        .starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: var(--min-opacity); transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(15, 15, 26, 0.98), transparent);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gold);
+            letter-spacing: 3px;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--star-white);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--star-white);
+            text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--gold);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--gold);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .celestial-symbol {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            animation: rotate 60s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .hero h1 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 400;
+            letter-spacing: 8px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .tagline {
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            font-weight: 300;
+            font-style: italic;
+            color: var(--star-white);
+            opacity: 0.9;
+            margin-bottom: 3rem;
+            letter-spacing: 1px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1.2rem 3.5rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--midnight);
+            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        .scroll-indicator svg {
+            width: 30px;
+            height: 30px;
+            stroke: var(--gold);
+            opacity: 0.7;
+        }
+
+        /* Section Styles */
+        section {
+            position: relative;
+            z-index: 1;
+            padding: 8rem 5%;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 400;
+            text-align: center;
+            letter-spacing: 5px;
+            margin-bottom: 1rem;
+            color: var(--gold);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            font-style: italic;
+            opacity: 0.8;
+            margin-bottom: 4rem;
+        }
+
+        /* Features Section */
+        .features {
+            background: linear-gradient(180deg, var(--midnight) 0%, var(--deep-purple) 50%, var(--midnight) 100%);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(26, 10, 46, 0.8), rgba(22, 33, 62, 0.6));
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.15);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            color: var(--gold-light);
+        }
+
+        .feature-card p {
+            font-size: 1.05rem;
+            opacity: 0.85;
+            line-height: 1.9;
+        }
+
+        /* Sample Section */
+        .sample {
+            background: var(--midnight);
+        }
+
+        .sample-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+
+        .sample-preview {
+            position: relative;
+        }
+
+        .sample-pages {
+            position: relative;
+            height: 500px;
+        }
+
+        .sample-page {
+            position: absolute;
+            width: 280px;
+            height: 400px;
+            background: linear-gradient(135deg, #f8f6ff, #e8e4f0);
+            border-radius: 5px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s ease;
+            overflow: hidden;
+        }
+
+        .sample-page:nth-child(1) {
+            left: 0;
+            top: 50px;
+            transform: rotate(-8deg);
+            z-index: 1;
+        }
+
+        .sample-page:nth-child(2) {
+            left: 80px;
+            top: 20px;
+            transform: rotate(-3deg);
+            z-index: 2;
+        }
+
+        .sample-page:nth-child(3) {
+            left: 160px;
+            top: 0;
+            transform: rotate(2deg);
+            z-index: 3;
+        }
+
+        .sample-page-inner {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--midnight);
+        }
+
+        .sample-page-inner h4 {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            color: var(--gold-dark);
+            margin-bottom: 10px;
+        }
+
+        .mini-chart {
+            width: 150px;
+            height: 150px;
+            margin: 10px 0;
+        }
+
+        .sample-content {
+            padding-right: 2rem;
+        }
+
+        .sample-content h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+            letter-spacing: 3px;
+        }
+
+        .sample-content ul {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .sample-content li {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .sample-content li::before {
+            content: '✧';
+            position: absolute;
+            left: 0;
+            color: var(--gold);
+        }
+
+        /* Pricing Section */
+        .pricing {
+            background: linear-gradient(180deg, var(--midnight) 0%, var(--cosmic-blue) 100%);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: linear-gradient(180deg, rgba(26, 10, 46, 0.9), rgba(15, 15, 26, 0.95));
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--gold);
+            transform: scale(1.05);
+        }
+
+        .pricing-card.featured::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gold);
+            color: var(--midnight);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            padding: 0.5rem 1.5rem;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--gold);
+            box-shadow: 0 0 60px rgba(212, 175, 55, 0.2);
+        }
+
+        .pricing-tier {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .pricing-price {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 600;
+            color: var(--star-white);
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price sup {
+            font-size: 1.5rem;
+            vertical-align: super;
+        }
+
+        .pricing-desc {
+            font-style: italic;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 2.5rem;
+            text-align: left;
+        }
+
+        .pricing-features li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .pricing-features li::before {
+            content: '★';
+            color: var(--gold);
+            font-size: 0.8rem;
+        }
+
+        .pricing-button {
+            width: 100%;
+            padding: 1rem 2rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border: 2px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-button:hover,
+        .pricing-card.featured .pricing-button {
+            background: var(--gold);
+            color: var(--midnight);
+        }
+
+        /* Order Form Section */
+        .order-form-section {
+            background: var(--midnight);
+            padding: 8rem 5%;
+        }
+
+        .order-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(26, 10, 46, 0.8), rgba(22, 33, 62, 0.6));
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 4rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 0.8rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            background: rgba(15, 15, 26, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--star-white);
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(248, 246, 255, 0.4);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .location-input {
+            position: relative;
+        }
+
+        .location-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--cosmic-blue);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .location-suggestions.active {
+            display: block;
+        }
+
+        .location-suggestion {
+            padding: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .location-suggestion:hover {
+            background: rgba(212, 175, 55, 0.2);
+        }
+
+        .form-submit {
+            width: 100%;
+            padding: 1.2rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            border: none;
+            color: var(--midnight);
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin-top: 1rem;
+        }
+
+        .form-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(212, 175, 55, 0.4);
+        }
+
+        .form-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            background: linear-gradient(180deg, var(--cosmic-blue) 0%, var(--midnight) 100%);
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card {
+            background: linear-gradient(135deg, rgba(26, 10, 46, 0.6), rgba(15, 15, 26, 0.8));
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 2.5rem;
+            position: relative;
+        }
+
+        .testimonial-card::before {
+            content: '"';
+            font-family: 'Cinzel', serif;
+            font-size: 6rem;
+            color: var(--gold);
+            opacity: 0.2;
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            line-height: 1;
+        }
+
+        .testimonial-text {
+            font-size: 1.15rem;
+            font-style: italic;
+            line-height: 1.9;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .testimonial-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            color: var(--midnight);
+        }
+
+        .testimonial-info h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .testimonial-info span {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .testimonial-stars {
+            color: var(--gold);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+
+        /* FAQ Section */
+        .faq {
+            background: var(--midnight);
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            margin-bottom: 1rem;
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 1.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent;
+            border: none;
+            color: var(--star-white);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            text-align: left;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .faq-question:hover {
+            color: var(--gold);
+        }
+
+        .faq-icon {
+            font-size: 1.5rem;
+            color: var(--gold);
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding-bottom: 1.5rem;
+        }
+
+        .faq-answer p {
+            font-size: 1.1rem;
+            opacity: 0.85;
+            line-height: 1.9;
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(180deg, var(--midnight), #080810);
+            padding: 5rem 5% 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .footer-brand .logo {
+            display: block;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-brand p {
+            font-size: 1rem;
+            opacity: 0.7;
+            line-height: 1.8;
+        }
+
+        .footer-column h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-column a {
+            color: var(--star-white);
+            text-decoration: none;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .footer-column a:hover {
+            opacity: 1;
+            color: var(--gold);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+
+        .footer-legal {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-legal a {
+            color: var(--star-white);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-legal a:hover {
+            color: var(--gold);
+        }
+
+        /* Language Selector */
+        .language-selector {
+            position: relative;
+        }
+
+        .language-selector select {
+            appearance: none;
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--star-white);
+            padding: 0.5rem 2rem 0.5rem 1rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .language-selector::after {
+            content: '▼';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.6rem;
+            color: var(--gold);
+            pointer-events: none;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: var(--midnight);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .form-submit.loading .spinner {
+            display: inline-block;
+        }
+
+        .form-submit.loading span {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .sample-container {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .sample-pages {
+                height: 350px;
+            }
+
+            .sample-page {
+                width: 200px;
+                height: 280px;
+            }
+
+            .order-container {
+                padding: 2rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+        }
+
+        /* Success/Error Messages */
+        .message {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(39, 174, 96, 0.2);
+            border: 1px solid rgba(39, 174, 96, 0.5);
+            color: #27ae60;
+        }
+
+        .message.error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            color: #e74c3c;
+        }
+
+        .message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Starfield Background -->
+    <div class="starfield" id="starfield"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#" class="logo">CELESTIAL <span>INSIGHTS</span></a>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#sample">Sample</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#faq">FAQ</a></li>
+        </ul>
+        <div class="language-selector">
+            <select id="languageSelect" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="pt">Português</option>
+                <option value="it">Italiano</option>
+                <option value="zh">中文</option>
+                <option value="ja">日本語</option>
+            </select>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <svg class="celestial-symbol" viewBox="0 0 100 100">
+                <defs>
+                    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#F4E4BC"/>
+                        <stop offset="50%" style="stop-color:#D4AF37"/>
+                        <stop offset="100%" style="stop-color:#996515"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="45" fill="none" stroke="url(#goldGrad)" stroke-width="1"/>
+                <circle cx="50" cy="50" r="35" fill="none" stroke="url(#goldGrad)" stroke-width="0.5"/>
+                <circle cx="50" cy="50" r="25" fill="none" stroke="url(#goldGrad)" stroke-width="0.5"/>
+                <circle cx="50" cy="50" r="8" fill="url(#goldGrad)"/>
+                <line x1="50" y1="5" x2="50" y2="20" stroke="url(#goldGrad)" stroke-width="1"/>
+                <line x1="50" y1="80" x2="50" y2="95" stroke="url(#goldGrad)" stroke-width="1"/>
+                <line x1="5" y1="50" x2="20" y2="50" stroke="url(#goldGrad)" stroke-width="1"/>
+                <line x1="80" y1="50" x2="95" y2="50" stroke="url(#goldGrad)" stroke-width="1"/>
+                <circle cx="50" cy="15" r="3" fill="url(#goldGrad)"/>
+                <circle cx="85" cy="50" r="2" fill="url(#goldGrad)"/>
+                <circle cx="50" cy="85" r="2.5" fill="url(#goldGrad)"/>
+                <circle cx="15" cy="50" r="2" fill="url(#goldGrad)"/>
+            </svg>
+            <h1 data-i18n="hero.title">Discover Your Cosmic Blueprint</h1>
+            <p class="tagline" data-i18n="hero.tagline">Personalized astrology reports crafted from the exact moment you entered this world</p>
+            <a href="#order" class="cta-button" data-i18n="hero.cta">Begin Your Journey</a>
+        </div>
+        <div class="scroll-indicator">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <path d="M12 5v14M5 12l7 7 7-7"/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <h2 class="section-title" data-i18n="features.title">What Awaits You</h2>
+        <p class="section-subtitle" data-i18n="features.subtitle">A comprehensive celestial analysis tailored uniquely to you</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <svg class="feature-icon" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#D4AF37" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="30" fill="none" stroke="#D4AF37" stroke-width="1" stroke-dasharray="5,5"/>
+                    <circle cx="50" cy="50" r="5" fill="#D4AF37"/>
+                    <circle cx="50" cy="20" r="4" fill="#F4E4BC"/>
+                    <circle cx="75" cy="35" r="3" fill="#F4E4BC"/>
+                    <circle cx="70" cy="70" r="3.5" fill="#F4E4BC"/>
+                    <circle cx="30" cy="65" r="3" fill="#F4E4BC"/>
+                    <circle cx="25" cy="40" r="2.5" fill="#F4E4BC"/>
+                </svg>
+                <h3 data-i18n="features.natal.title">Complete Natal Chart</h3>
+                <p data-i18n="features.natal.desc">A beautifully rendered map of the heavens at your exact moment of birth, showing all planetary positions and celestial houses.</p>
+            </div>
+            <div class="feature-card">
+                <svg class="feature-icon" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="25" fill="none" stroke="#D4AF37" stroke-width="2"/>
+                    <path d="M50 25 L55 45 L75 50 L55 55 L50 75 L45 55 L25 50 L45 45 Z" fill="#D4AF37" opacity="0.3"/>
+                    <circle cx="50" cy="50" r="8" fill="#F4E4BC"/>
+                    <circle cx="50" cy="50" r="4" fill="#D4AF37"/>
+                </svg>
+                <h3 data-i18n="features.sun.title">Sun Sign Mastery</h3>
+                <p data-i18n="features.sun.desc">Deep dive into your core identity, ego, and life purpose through comprehensive Sun sign analysis and interpretation.</p>
+            </div>
+            <div class="feature-card">
+                <svg class="feature-icon" viewBox="0 0 100 100">
+                    <path d="M50 15 Q65 25 65 45 Q65 65 50 85 Q35 65 35 45 Q35 25 50 15" fill="none" stroke="#D4AF37" stroke-width="2"/>
+                    <circle cx="50" cy="45" r="15" fill="#D4AF37" opacity="0.2"/>
+                    <circle cx="50" cy="45" r="8" fill="#F4E4BC"/>
+                </svg>
+                <h3 data-i18n="features.moon.title">Moon Sign Wisdom</h3>
+                <p data-i18n="features.moon.desc">Explore your emotional landscape, inner self, and subconscious patterns through detailed Moon sign revelations.</p>
+            </div>
+            <div class="feature-card">
+                <svg class="feature-icon" viewBox="0 0 100 100">
+                    <line x1="20" y1="80" x2="80" y2="20" stroke="#D4AF37" stroke-width="2"/>
+                    <circle cx="25" cy="75" r="8" fill="none" stroke="#D4AF37" stroke-width="2"/>
+                    <circle cx="75" cy="25" r="8" fill="none" stroke="#D4AF37" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="5" fill="#F4E4BC"/>
+                </svg>
+                <h3 data-i18n="features.aspects.title">Planetary Aspects</h3>
+                <p data-i18n="features.aspects.desc">Understand the cosmic conversations between planets and how they shape your personality, challenges, and gifts.</p>
+            </div>
+            <div class="feature-card">
+                <svg class="feature-icon" viewBox="0 0 100 100">
+                    <rect x="20" y="20" width="60" height="60" fill="none" stroke="#D4AF37" stroke-width="2"/>
+                    <line x1="20" y1="40" x2="80" y2="40" stroke="#D4AF37" stroke-width="1"/>
+                    <line x1="20" y1="60" x2="80" y2="60" stroke="#D4AF37" stroke-width="1"/>
+                    <line x1="40" y1="20" x2="40" y2="80" stroke="#D4AF37" stroke-width="1"/>
+                    <line x1="60" y1="20" x2="60" y2="80" stroke="#D4AF37" stroke-width="1"/>
+                    <circle cx="50" cy="50" r="4" fill="#F4E4BC"/>
+                </svg>
+                <h3 data-i18n="features.houses.title">House Placements</h3>
+                <p data-i18n="features.houses.desc">Discover how each life area—career, love, home, creativity—is influenced by planetary energies in your chart.</p>
+            </div>
+            <div class="feature-card">
+                <svg class="feature-icon" viewBox="0 0 100 100">
+                    <path d="M50 10 L61 40 L93 40 L67 58 L78 90 L50 70 L22 90 L33 58 L7 40 L39 40 Z" fill="none" stroke="#D4AF37" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="15" fill="#D4AF37" opacity="0.2"/>
+                </svg>
+                <h3 data-i18n="features.destiny.title">Life Path Guidance</h3>
+                <p data-i18n="features.destiny.desc">Receive insights into your soul's journey, karmic lessons, and the opportunities the universe has in store.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sample Section -->
+    <section class="sample" id="sample">
+        <h2 class="section-title" data-i18n="sample.title">Glimpse Your Report</h2>
+        <p class="section-subtitle" data-i18n="sample.subtitle">30+ pages of cosmic wisdom, beautifully crafted</p>
+        <div class="sample-container">
+            <div class="sample-preview">
+                <div class="sample-pages">
+                    <div class="sample-page">
+                        <div class="sample-page-inner">
+                            <h4>Natal Chart</h4>
+                            <svg class="mini-chart" viewBox="0 0 150 150">
+                                <circle cx="75" cy="75" r="70" fill="none" stroke="#D4AF37" stroke-width="1"/>
+                                <circle cx="75" cy="75" r="55" fill="none" stroke="#996515" stroke-width="0.5"/>
+                                <circle cx="75" cy="75" r="40" fill="none" stroke="#996515" stroke-width="0.5"/>
+                                <line x1="75" y1="5" x2="75" y2="145" stroke="#D4AF37" stroke-width="0.5" opacity="0.3"/>
+                                <line x1="5" y1="75" x2="145" y2="75" stroke="#D4AF37" stroke-width="0.5" opacity="0.3"/>
+                                <circle cx="75" cy="20" r="4" fill="#D4AF37"/>
+                                <circle cx="120" cy="45" r="3" fill="#F4E4BC"/>
+                                <circle cx="130" cy="90" r="3.5" fill="#D4AF37"/>
+                                <circle cx="100" cy="120" r="3" fill="#F4E4BC"/>
+                                <circle cx="50" cy="130" r="4" fill="#D4AF37"/>
+                                <circle cx="25" cy="100" r="3" fill="#F4E4BC"/>
+                                <circle cx="20" cy="60" r="3.5" fill="#D4AF37"/>
+                                <circle cx="45" cy="30" r="3" fill="#F4E4BC"/>
+                            </svg>
+                            <p style="font-size: 0.7rem; color: #666; margin-top: 10px;">Sun in Aries • Moon in Cancer</p>
+                        </div>
+                    </div>
+                    <div class="sample-page">
+                        <div class="sample-page-inner">
+                            <h4>Sun Sign Analysis</h4>
+                            <div style="text-align: left; font-size: 0.65rem; color: #333; padding: 10px;">
+                                <p style="margin-bottom: 8px;"><strong>Core Identity</strong></p>
+                                <p style="line-height: 1.5; opacity: 0.8;">With your Sun in Aries, you possess an innate pioneering spirit. Your soul craves adventure and new beginnings...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sample-page">
+                        <div class="sample-page-inner">
+                            <h4>Planetary Aspects</h4>
+                            <svg class="mini-chart" viewBox="0 0 150 150">
+                                <circle cx="40" cy="40" r="15" fill="none" stroke="#D4AF37" stroke-width="1"/>
+                                <circle cx="110" cy="40" r="15" fill="none" stroke="#D4AF37" stroke-width="1"/>
+                                <circle cx="75" cy="110" r="15" fill="none" stroke="#D4AF37" stroke-width="1"/>
+                                <line x1="55" y1="40" x2="95" y2="40" stroke="#D4AF37" stroke-width="1"/>
+                                <line x1="50" y1="52" x2="65" y2="98" stroke="#D4AF37" stroke-width="1" stroke-dasharray="3,3"/>
+                                <line x1="100" y1="52" x2="85" y2="98" stroke="#D4AF37" stroke-width="1"/>
+                                <text x="40" y="44" text-anchor="middle" fill="#996515" font-size="10">☉</text>
+                                <text x="110" y="44" text-anchor="middle" fill="#996515" font-size="10">☽</text>
+                                <text x="75" y="114" text-anchor="middle" fill="#996515" font-size="10">♃</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="sample-content">
+                <h3 data-i18n="sample.includes">Your Report Includes</h3>
+                <ul>
+                    <li data-i18n="sample.item1">Stunning natal chart visualization</li>
+                    <li data-i18n="sample.item2">In-depth Sun, Moon & Rising analysis</li>
+                    <li data-i18n="sample.item3">All planetary positions explained</li>
+                    <li data-i18n="sample.item4">12 house interpretations</li>
+                    <li data-i18n="sample.item5">Major & minor aspects decoded</li>
+                    <li data-i18n="sample.item6">Personalized life guidance</li>
+                    <li data-i18n="sample.item7">Compatibility insights</li>
+                    <li data-i18n="sample.item8">Beautiful star maps & charts</li>
+                </ul>
+                <a href="#order" class="cta-button" data-i18n="sample.cta">Order Your Report</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <h2 class="section-title" data-i18n="pricing.title">Choose Your Journey</h2>
+        <p class="section-subtitle" data-i18n="pricing.subtitle">Unlock the secrets written in your stars</p>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <div class="pricing-tier" data-i18n="pricing.essential.tier">Essential</div>
+                <div class="pricing-price"><sup>$</sup>29<sup>.99</sup></div>
+                <p class="pricing-desc" data-i18n="pricing.essential.desc">Digital PDF Report</p>
+                <ul class="pricing-features">
+                    <li data-i18n="pricing.essential.f1">30+ page personalized report</li>
+                    <li data-i18n="pricing.essential.f2">Complete natal chart analysis</li>
+                    <li data-i18n="pricing.essential.f3">Sun, Moon & Rising signs</li>
+                    <li data-i18n="pricing.essential.f4">Planetary positions</li>
+                    <li data-i18n="pricing.essential.f5">Beautiful star maps</li>
+                </ul>
+                <button class="pricing-button" onclick="selectPlan('essential')" data-i18n="pricing.cta">Select Plan</button>
+            </div>
+            <div class="pricing-card featured">
+                <div class="pricing-tier" data-i18n="pricing.premium.tier">Premium</div>
+                <div class="pricing-price"><sup>$</sup>49<sup>.99</sup></div>
+                <p class="pricing-desc" data-i18n="pricing.premium.desc">Digital + Printed Report</p>
+                <ul class="pricing-features">
+                    <li data-i18n="pricing.premium.f1">Everything in Essential</li>
+                    <li data-i18n="pricing.premium.f2">Hardcover printed copy</li>
+                    <li data-i18n="pricing.premium.f3">Free worldwide shipping</li>
+                    <li data-i18n="pricing.premium.f4">Gift-ready packaging</li>
+                    <li data-i18n="pricing.premium.f5">Aspect interpretations</li>
+                </ul>
+                <button class="pricing-button" onclick="selectPlan('premium')" data-i18n="pricing.cta">Select Plan</button>
+            </div>
+            <div class="pricing-card">
+                <div class="pricing-tier" data-i18n="pricing.ultimate.tier">Ultimate</div>
+                <div class="pricing-price"><sup>$</sup>69<sup>.99</sup></div>
+                <p class="pricing-desc" data-i18n="pricing.ultimate.desc">Complete Cosmic Package</p>
+                <ul class="pricing-features">
+                    <li data-i18n="pricing.ultimate.f1">Everything in Premium</li>
+                    <li data-i18n="pricing.ultimate.f2">Love compatibility analysis</li>
+                    <li data-i18n="pricing.ultimate.f3">Career & purpose guide</li>
+                    <li data-i18n="pricing.ultimate.f4">12-month forecast</li>
+                    <li data-i18n="pricing.ultimate.f5">Priority email support</li>
+                </ul>
+                <button class="pricing-button" onclick="selectPlan('ultimate')" data-i18n="pricing.cta">Select Plan</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Form Section -->
+    <section class="order-form-section" id="order">
+        <h2 class="section-title" data-i18n="order.title">Enter Your Birth Details</h2>
+        <p class="section-subtitle" data-i18n="order.subtitle">Precision matters—provide your exact birth information for an accurate reading</p>
+        <div class="order-container">
+            <div class="message success" id="successMessage"></div>
+            <div class="message error" id="errorMessage"></div>
+            <form id="orderForm">
+                <input type="hidden" id="selectedPlan" name="plan" value="essential">
+                
+                <div class="form-group">
+                    <label for="fullName" data-i18n="order.name">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" data-i18n="order.email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="birthDate" data-i18n="order.birthdate">Birth Date</label>
+                        <input type="date" id="birthDate" name="birthDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="birthTime" data-i18n="order.birthtime">Birth Time</label>
+                        <input type="time" id="birthTime" name="birthTime" required>
+                    </div>
+                </div>
+
+                <div class="form-group location-input">
+                    <label for="birthPlace" data-i18n="order.birthplace">Birth Place</label>
+                    <input type="text" id="birthPlace" name="birthPlace" placeholder="City, Country" required autocomplete="off">
+                    <div class="location-suggestions" id="locationSuggestions"></div>
+                    <input type="hidden" id="latitude" name="latitude">
+                    <input type="hidden" id="longitude" name="longitude">
+                    <input type="hidden" id="timezone" name="timezone">
+                </div>
+
+                <div class="form-group">
+                    <label for="reportLanguage" data-i18n="order.language">Report Language</label>
+                    <select id="reportLanguage" name="language">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                        <option value="pt">Português</option>
+                        <option value="it">Italiano</option>
+                        <option value="zh">中文</option>
+                        <option value="ja">日本語</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-top: 2rem; padding: 1.5rem; background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3);">
+                    <p style="text-align: center; font-size: 1.1rem;">
+                        <span data-i18n="order.selected">Selected Plan:</span> 
+                        <strong id="planDisplay" style="color: var(--gold);">Essential - $29.99</strong>
+                    </p>
+                </div>
+
+                <button type="submit" class="form-submit" id="submitBtn">
+                    <span data-i18n="order.submit">Proceed to Payment</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials" id="testimonials">
+        <h2 class="section-title" data-i18n="testimonials.title">Cosmic Revelations</h2>
+        <p class="section-subtitle" data-i18n="testimonials.subtitle">What others discovered about themselves</p>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <p class="testimonial-text" data-i18n="testimonials.t1.text">"The accuracy was uncanny. Reading about my Moon in Scorpio finally helped me understand why I feel things so intensely. This report gave me permission to embrace my depth."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">SM</div>
+                    <div class="testimonial-info">
+                        <h4>Sarah M.</h4>
+                        <span>Scorpio Sun, Scorpio Moon</span>
+                        <div class="testimonial-stars">★★★★★</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text" data-i18n="testimonials.t2.text">"I've read many horoscopes, but this was different. The personalized insights about my career path based on my 10th house were exactly what I needed to hear."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">JK</div>
+                    <div class="testimonial-info">
+                        <h4>James K.</h4>
+                        <span>Capricorn Sun, Leo Rising</span>
+                        <div class="testimonial-stars">★★★★★</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text" data-i18n="testimonials.t3.text">"Bought the premium package as a gift for my daughter's 18th birthday. The printed report is absolutely stunning—she keeps it on her nightstand."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">LR</div>
+                    <div class="testimonial-info">
+                        <h4>Linda R.</h4>
+                        <span>Gift Purchase</span>
+                        <div class="testimonial-stars">★★★★★</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <h2 class="section-title" data-i18n="faq.title">Frequently Asked Questions</h2>
+        <p class="section-subtitle" data-i18n="faq.subtitle">Everything you need to know</p>
+        <div class="faq-container">
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span data-i18n="faq.q1">Why do you need my exact birth time?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p data-i18n="faq.a1">Your exact birth time determines your Rising sign (Ascendant) and the precise positions of all houses in your chart. Even a difference of a few minutes can shift house cusps and change interpretations. If you don't know your exact time, you can still get a report, but some sections will be less precise.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span data-i18n="faq.q2">How long until I receive my report?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p data-i18n="faq.a2">Digital reports are delivered within 24 hours to your email. Printed reports ship within 3-5 business days and delivery typically takes 7-14 days depending on your location.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span data-i18n="faq.q3">Is this personalized or generic content?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p data-i18n="faq.a3">Every report is calculated specifically for your birth data using professional astronomical algorithms. The interpretations are drawn from your unique planetary positions, aspects, and house placements—no two reports are exactly alike unless two people share the exact same birth time and location.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span data-i18n="faq.q4">What if I don't know my birth place exactly?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p data-i18n="faq.a4">Try to find the closest city to where you were born. Birth place affects your Rising sign and house placements through the time zone and geographic coordinates. If you were born in a small town, choose the nearest major city for the most accurate results.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span data-i18n="faq.q5">Can I get a refund if I'm not satisfied?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p data-i18n="faq.a5">Yes! We offer a 30-day satisfaction guarantee. If your report doesn't meet your expectations, contact our support team for a full refund on digital products. For printed reports, we'll either reprint with corrections or refund your order.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <a href="#" class="logo">CELESTIAL <span>INSIGHTS</span></a>
+                <p>Unlock the ancient wisdom of the stars with modern precision. Your cosmic blueprint awaits.</p>
+            </div>
+            <div class="footer-column">
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#sample">Sample Report</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Shipping Info</a></li>
+                    <li><a href="#">Track Order</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Refund Policy</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 Celestial Insights. All rights reserved.</p>
+            <div class="footer-legal">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Cookies</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ============================================
+        // CONFIGURATION - UPDATE THESE VALUES
+        // ============================================
+        const CONFIG = {
+            STRIPE_PUBLISHABLE_KEY: 'pk_test_YOUR_STRIPE_PUBLISHABLE_KEY', // Replace with your Stripe publishable key
+            API_BASE_URL: '/api', // Your backend API URL
+            PLANS: {
+                essential: { name: 'Essential', price: 29.99, priceId: 'price_essential_id' },
+                premium: { name: 'Premium', price: 49.99, priceId: 'price_premium_id' },
+                ultimate: { name: 'Ultimate', price: 69.99, priceId: 'price_ultimate_id' }
+            }
+        };
+
+        // ============================================
+        // STARFIELD GENERATION
+        // ============================================
+        function createStarfield() {
+            const starfield = document.getElementById('starfield');
+            const starCount = 200;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 2 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+                star.style.setProperty('--min-opacity', Math.random() * 0.3 + 0.2);
+                star.style.animationDelay = Math.random() * 5 + 's';
+                starfield.appendChild(star);
+            }
+        }
+
+        // ============================================
+        // FAQ ACCORDION
+        // ============================================
+        function initFAQ() {
+            const faqItems = document.querySelectorAll('.faq-item');
+            
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                question.addEventListener('click', () => {
+                    const isActive = item.classList.contains('active');
+                    
+                    // Close all items
+                    faqItems.forEach(i => i.classList.remove('active'));
+                    
+                    // Open clicked item if it wasn't active
+                    if (!isActive) {
+                        item.classList.add('active');
+                    }
+                });
+            });
+        }
+
+        // ============================================
+        // PLAN SELECTION
+        // ============================================
+        let selectedPlan = 'essential';
+
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            document.getElementById('selectedPlan').value = plan;
+            
+            const planInfo = CONFIG.PLANS[plan];
+            document.getElementById('planDisplay').textContent = `${planInfo.name} - $${planInfo.price.toFixed(2)}`;
+            
+            // Scroll to order form
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ============================================
+        // LOCATION AUTOCOMPLETE (Simplified - use API in production)
+        // ============================================
+        const birthPlaceInput = document.getElementById('birthPlace');
+        const suggestionsList = document.getElementById('locationSuggestions');
+
+        // In production, replace with actual geocoding API (Google Places, Mapbox, etc.)
+        const sampleLocations = [
+            { name: 'New York, NY, USA', lat: 40.7128, lng: -74.0060, tz: 'America/New_York' },
+            { name: 'Los Angeles, CA, USA', lat: 34.0522, lng: -118.2437, tz: 'America/Los_Angeles' },
+            { name: 'London, United Kingdom', lat: 51.5074, lng: -0.1278, tz: 'Europe/London' },
+            { name: 'Paris, France', lat: 48.8566, lng: 2.3522, tz: 'Europe/Paris' },
+            { name: 'Tokyo, Japan', lat: 35.6762, lng: 139.6503, tz: 'Asia/Tokyo' },
+            { name: 'Sydney, Australia', lat: -33.8688, lng: 151.2093, tz: 'Australia/Sydney' },
+            { name: 'Berlin, Germany', lat: 52.5200, lng: 13.4050, tz: 'Europe/Berlin' },
+            { name: 'São Paulo, Brazil', lat: -23.5505, lng: -46.6333, tz: 'America/Sao_Paulo' },
+            { name: 'Mumbai, India', lat: 19.0760, lng: 72.8777, tz: 'Asia/Kolkata' },
+            { name: 'Beijing, China', lat: 39.9042, lng: 116.4074, tz: 'Asia/Shanghai' }
+        ];
+
+        birthPlaceInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            if (query.length < 2) {
+                suggestionsList.classList.remove('active');
+                return;
+            }
+
+            const matches = sampleLocations.filter(loc => 
+                loc.name.toLowerCase().includes(query)
+            );
+
+            if (matches.length > 0) {
+                suggestionsList.innerHTML = matches.map(loc => `
+                    <div class="location-suggestion" data-lat="${loc.lat}" data-lng="${loc.lng}" data-tz="${loc.tz}" data-name="${loc.name}">
+                        ${loc.name}
+                    </div>
+                `).join('');
+                suggestionsList.classList.add('active');
+
+                // Add click handlers
+                suggestionsList.querySelectorAll('.location-suggestion').forEach(suggestion => {
+                    suggestion.addEventListener('click', function() {
+                        birthPlaceInput.value = this.dataset.name;
+                        document.getElementById('latitude').value = this.dataset.lat;
+                        document.getElementById('longitude').value = this.dataset.lng;
+                        document.getElementById('timezone').value = this.dataset.tz;
+                        suggestionsList.classList.remove('active');
+                    });
+                });
+            } else {
+                suggestionsList.classList.remove('active');
+            }
+        });
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.location-input')) {
+                suggestionsList.classList.remove('active');
+            }
+        });
+
+        // ============================================
+        // FORM SUBMISSION & STRIPE CHECKOUT
+        // ============================================
+        const orderForm = document.getElementById('orderForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        orderForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            if (!data.latitude || !data.longitude) {
+                showMessage('error', 'Please select a birth place from the suggestions for accurate calculations.');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            try {
+                // Create checkout session
+                const response = await fetch(`${CONFIG.API_BASE_URL}/create-checkout-session`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        plan: selectedPlan,
+                        priceId: CONFIG.PLANS[selectedPlan].priceId,
+                        customerEmail: data.email,
+                        metadata: {
+                            fullName: data.fullName,
+                            birthDate: data.birthDate,
+                            birthTime: data.birthTime,
+                            birthPlace: data.birthPlace,
+                            latitude: data.latitude,
+                            longitude: data.longitude,
+                            timezone: data.timezone,
+                            language: data.language
+                        }
+                    })
+                });
+
+                const session = await response.json();
+
+                if (session.error) {
+                    throw new Error(session.error);
+                }
+
+                // Redirect to Stripe Checkout
+                const stripe = Stripe(CONFIG.STRIPE_PUBLISHABLE_KEY);
+                const result = await stripe.redirectToCheckout({
+                    sessionId: session.id
+                });
+
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+
+            } catch (error) {
+                console.error('Checkout error:', error);
+                showMessage('error', 'Something went wrong. Please try again or contact support.');
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }
+        });
+
+        function showMessage(type, text) {
+            const messageEl = document.getElementById(type + 'Message');
+            messageEl.textContent = text;
+            messageEl.classList.add('show');
+            
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 5000);
+        }
+
+        // ============================================
+        // INTERNATIONALIZATION (i18n)
+        // ============================================
+        const translations = {
+            en: {
+                'hero.title': 'Discover Your Cosmic Blueprint',
+                'hero.tagline': 'Personalized astrology reports crafted from the exact moment you entered this world',
+                'hero.cta': 'Begin Your Journey',
+                'features.title': 'What Awaits You',
+                'features.subtitle': 'A comprehensive celestial analysis tailored uniquely to you',
+                // Add more translations as needed
+            },
+            es: {
+                'hero.title': 'Descubre Tu Mapa Cósmico',
+                'hero.tagline': 'Informes astrológicos personalizados creados desde el momento exacto en que llegaste a este mundo',
+                'hero.cta': 'Comienza Tu Viaje',
+                'features.title': 'Lo Que Te Espera',
+                'features.subtitle': 'Un análisis celestial completo hecho únicamente para ti',
+            },
+            fr: {
+                'hero.title': 'Découvrez Votre Plan Cosmique',
+                'hero.tagline': 'Rapports astrologiques personnalisés créés à partir du moment exact où vous êtes venu au monde',
+                'hero.cta': 'Commencez Votre Voyage',
+                'features.title': 'Ce Qui Vous Attend',
+                'features.subtitle': 'Une analyse céleste complète adaptée uniquement à vous',
+            },
+            de: {
+                'hero.title': 'Entdecken Sie Ihren Kosmischen Bauplan',
+                'hero.tagline': 'Personalisierte Astrologie-Berichte, erstellt aus dem genauen Moment Ihrer Geburt',
+                'hero.cta': 'Beginnen Sie Ihre Reise',
+                'features.title': 'Was Sie Erwartet',
+                'features.subtitle': 'Eine umfassende himmlische Analyse, einzigartig auf Sie zugeschnitten',
+            },
+            // Add more languages: pt, it, zh, ja
+        };
+
+        function changeLanguage(lang) {
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            // Update report language selector
+            document.getElementById('reportLanguage').value = lang;
+            
+            // Store preference
+            localStorage.setItem('preferredLanguage', lang);
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            createStarfield();
+            initFAQ();
+            
+            // Restore language preference
+            const savedLang = localStorage.getItem('preferredLanguage');
+            if (savedLang) {
+                document.getElementById('languageSelect').value = savedLang;
+                changeLanguage(savedLang);
+            }
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
