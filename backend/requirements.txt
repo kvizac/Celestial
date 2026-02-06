@@ -1,17 +1,6 @@
-# Celestial Insights - Python Dependencies (Railway-compatible)
-
-# Web Framework
 flask==3.0.0
 flask-cors==4.0.0
-
-# Payment Processing
 stripe==7.0.0
-
-# PDF Generation
 reportlab==4.0.7
-
-# Environment Variables
 python-dotenv==1.0.0
-
-# Production Server
 gunicorn==21.2.0
