@@ -13,7 +13,15 @@ import hashlib
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=['*'])
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
+# Add CORS headers to all responses
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY', 'sk_test_xxx')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', 'whsec_xxx')
