@@ -1350,10 +1350,37 @@
                     </p>
                 </div>
 
+                <button type="button" class="form-submit" id="previewBtn" style="background: linear-gradient(135deg, var(--cosmic-blue), var(--deep-purple)); margin-bottom: 1rem;">
+                    <span>✨ Preview My Chart (Free)</span>
+                </button>
+                
                 <button type="submit" class="form-submit" id="submitBtn">
                     <span data-i18n="order.submit">Proceed to Payment</span>
                     <div class="spinner"></div>
                 </button>
+                
+                <!-- Chart Preview Result -->
+                <div id="chartPreview" style="display: none; margin-top: 2rem; padding: 2rem; background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(26, 10, 46, 0.8)); border: 2px solid var(--gold); border-radius: 15px; text-align: center;">
+                    <h3 style="font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.8rem; margin-bottom: 1rem;">Your Cosmic Blueprint</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 1.5rem 0;">
+                        <div style="padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                            <div style="font-size: 2rem;">☀️</div>
+                            <div style="color: var(--gold); font-weight: 600;">Sun Sign</div>
+                            <div id="sunSign" style="font-size: 1.3rem; font-weight: bold;">-</div>
+                        </div>
+                        <div style="padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                            <div style="font-size: 2rem;">🌙</div>
+                            <div style="color: var(--gold); font-weight: 600;">Moon Sign</div>
+                            <div id="moonSign" style="font-size: 1.3rem; font-weight: bold;">-</div>
+                        </div>
+                        <div style="padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                            <div style="font-size: 2rem;">⬆️</div>
+                            <div style="color: var(--gold); font-weight: 600;">Rising Sign</div>
+                            <div id="risingSign" style="font-size: 1.3rem; font-weight: bold;">-</div>
+                        </div>
+                    </div>
+                    <p style="color: var(--gold-light); font-style: italic; margin-top: 1rem;">This is just a glimpse! Your full report includes detailed interpretations, planetary positions, house placements, and personalized life guidance.</p>
+                </div>
             </form>
         </div>
     </section>
@@ -1697,6 +1724,63 @@
                 submitBtn.classList.remove('loading');
                 submitBtn.disabled = false;
             }
+        });
+
+        // ============================================
+        // PREVIEW CHART (FREE - No Stripe needed)
+        // ============================================
+        const previewBtn = document.getElementById('previewBtn');
+        
+        previewBtn.addEventListener('click', async function() {
+            const formData = new FormData(orderForm);
+            const data = Object.fromEntries(formData.entries());
+            
+            if (!data.birthDate || !data.birthTime) {
+                showMessage('error', 'Please fill in your birth date and time.');
+                return;
+            }
+            
+            if (!data.latitude || !data.longitude) {
+                showMessage('error', 'Please select a birth place from the suggestions.');
+                return;
+            }
+            
+            previewBtn.disabled = true;
+            previewBtn.innerHTML = '<span>✨ Calculating...</span>';
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/preview-chart`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: data.fullName || 'Preview',
+                        birthDate: data.birthDate,
+                        birthTime: data.birthTime,
+                        latitude: data.latitude,
+                        longitude: data.longitude,
+                        timezone: data.timezone || 'UTC'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.chart) {
+                    document.getElementById('sunSign').textContent = result.chart.sun_sign;
+                    document.getElementById('moonSign').textContent = result.chart.moon_sign;
+                    document.getElementById('risingSign').textContent = result.chart.rising_sign;
+                    document.getElementById('chartPreview').style.display = 'block';
+                    document.getElementById('chartPreview').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    throw new Error(result.error || 'Failed to generate preview');
+                }
+                
+            } catch (error) {
+                console.error('Preview error:', error);
+                showMessage('error', 'Could not generate preview. Please try again.');
+            }
+            
+            previewBtn.disabled = false;
+            previewBtn.innerHTML = '<span>✨ Preview My Chart (Free)</span>';
         });
 
         function showMessage(type, text) {
